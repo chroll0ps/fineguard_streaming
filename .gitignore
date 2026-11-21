@@ -1,0 +1,10 @@
+# FinGuard Streaming Project Git Ignore
+.venv/
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+.env
+kafka_producer/.env
+*.log

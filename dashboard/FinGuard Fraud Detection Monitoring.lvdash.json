@@ -1,0 +1,2529 @@
+{
+  "datasets": [
+    {
+      "name": "transactions",
+      "displayName": "Silver Transactions (Baseline Traffic)",
+      "config": {
+        "version": "1.1",
+        "source": "fineguard.silver.transactions",
+        "dimensions": [
+          {
+            "name": "transaction_timestamp",
+            "expr": "transaction_timestamp"
+          },
+          {
+            "name": "transaction_id",
+            "expr": "transaction_id"
+          },
+          {
+            "name": "customer_id",
+            "expr": "customer_id"
+          },
+          {
+            "name": "merchant_name",
+            "expr": "merchant_name"
+          },
+          {
+            "name": "merchant_category",
+            "expr": "merchant_category"
+          },
+          {
+            "name": "city",
+            "expr": "city"
+          },
+          {
+            "name": "country",
+            "expr": "country"
+          },
+          {
+            "name": "currency",
+            "expr": "currency"
+          },
+          {
+            "name": "transaction_type",
+            "expr": "transaction_type"
+          },
+          {
+            "name": "payment_channel",
+            "expr": "payment_channel"
+          },
+          {
+            "name": "transaction_status",
+            "expr": "status"
+          },
+          {
+            "name": "cross_border",
+            "expr": "CASE WHEN is_international THEN 'International' ELSE 'Domestic' END"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_volume",
+            "expr": "SUM(amount)"
+          },
+          {
+            "name": "transaction_count",
+            "expr": "COUNT(1)"
+          },
+          {
+            "name": "avg_transaction_amount",
+            "expr": "SUM(amount) / COUNT(1)"
+          },
+          {
+            "name": "active_customers",
+            "expr": "COUNT(DISTINCT customer_id)"
+          },
+          {
+            "name": "active_merchants",
+            "expr": "COUNT(DISTINCT merchant_name)"
+          },
+          {
+            "name": "international_count",
+            "expr": "COUNT(1) FILTER (WHERE is_international)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "alerts",
+      "displayName": "Gold Alerts (High-Value + Fraud Watchlist)",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT\n  alert_id,\n  'High-Value Alert' AS alert_stream,\n  alert_timestamp,\n  transaction_id,\n  transaction_timestamp,\n  customer_id,\n  customer_name,\n  customer_email,\n  CAST(NULL AS STRING) AS card_masked,\n  currency,\n  CAST(NULL AS STRING) AS merchant_id,\n  merchant_name,\n  merchant_category,\n  transaction_type,\n  payment_channel,\n  city,\n  country,\n  CASE WHEN is_international THEN 'International' ELSE 'Domestic' END AS cross_border,\n  CAST(transaction_amount AS DOUBLE) AS amount,\n  CAST(transaction_limit AS DOUBLE) AS transaction_limit,\n  CAST(NULL AS STRING) AS risk_level,\n  CAST(NULL AS STRING) AS watch_type,\n  CAST(NULL AS STRING) AS action,\n  CAST(NULL AS STRING) AS reason_description,\n  CAST(NULL AS STRING) AS reported_source,\n  CAST(NULL AS STRING) AS watchlist_city,\n  CAST(NULL AS STRING) AS watchlist_country,\n  status\nFROM fineguard.gold.high_value_transactions_alert UNION ALL SELECT\n  alert_id,\n  'Fraud Watchlist' AS alert_stream,\n  alert_timestamp,\n  transaction_id,\n  transaction_timestamp,\n  customer_id,\n  customer_name,\n  customer_email,\n  CASE WHEN card_number IS NULL THEN NULL ELSE CONCAT('**** ', RIGHT(card_number, 4)) END AS card_masked,\n  currency,\n  merchant_id,\n  merchant_name,\n  merchant_category,\n  transaction_type,\n  payment_channel,\n  transaction_city AS city,\n  transaction_country AS country,\n  CASE WHEN is_international THEN 'International' ELSE 'Domestic' END AS cross_border,\n  CAST(amount AS DOUBLE) AS amount,\n  CAST(NULL AS DOUBLE) AS transaction_limit,\n  risk_level,\n  watch_type,\n  action,\n  reason_description,\n  reported_source,\n  watchlist_city,\n  watchlist_country,\n  transaction_status AS status\nFROM fineguard.gold.fraud_card_alert",
+        "dimensions": [
+          {
+            "name": "alert_timestamp",
+            "expr": "alert_timestamp"
+          },
+          {
+            "name": "transaction_timestamp",
+            "expr": "transaction_timestamp"
+          },
+          {
+            "name": "alert_id",
+            "expr": "alert_id"
+          },
+          {
+            "name": "transaction_id",
+            "expr": "transaction_id"
+          },
+          {
+            "name": "alert_stream",
+            "expr": "alert_stream"
+          },
+          {
+            "name": "customer_id",
+            "expr": "customer_id"
+          },
+          {
+            "name": "customer_name",
+            "expr": "customer_name"
+          },
+          {
+            "name": "card_masked",
+            "expr": "card_masked"
+          },
+          {
+            "name": "merchant_id",
+            "expr": "merchant_id"
+          },
+          {
+            "name": "merchant_name",
+            "expr": "merchant_name"
+          },
+          {
+            "name": "merchant_category",
+            "expr": "merchant_category"
+          },
+          {
+            "name": "city",
+            "expr": "city"
+          },
+          {
+            "name": "country",
+            "expr": "country"
+          },
+          {
+            "name": "currency",
+            "expr": "currency"
+          },
+          {
+            "name": "transaction_type",
+            "expr": "transaction_type"
+          },
+          {
+            "name": "payment_channel",
+            "expr": "payment_channel"
+          },
+          {
+            "name": "cross_border",
+            "expr": "cross_border"
+          },
+          {
+            "name": "risk_level",
+            "expr": "risk_level"
+          },
+          {
+            "name": "watch_type",
+            "expr": "watch_type"
+          },
+          {
+            "name": "action",
+            "expr": "action"
+          },
+          {
+            "name": "status",
+            "expr": "status"
+          },
+          {
+            "name": "reported_source",
+            "expr": "reported_source"
+          },
+          {
+            "name": "watchlist_city",
+            "expr": "watchlist_city"
+          },
+          {
+            "name": "watchlist_country",
+            "expr": "watchlist_country"
+          }
+        ],
+        "measures": [
+          {
+            "name": "alert_count",
+            "expr": "COUNT(1)"
+          },
+          {
+            "name": "high_value_count",
+            "expr": "COUNT(1) FILTER (WHERE alert_stream = 'High-Value Alert')"
+          },
+          {
+            "name": "fraud_match_count",
+            "expr": "COUNT(1) FILTER (WHERE alert_stream = 'Fraud Watchlist')"
+          },
+          {
+            "name": "total_alert_amount",
+            "expr": "SUM(amount)"
+          },
+          {
+            "name": "excess_over_limit",
+            "expr": "SUM(CASE WHEN transaction_limit IS NOT NULL AND amount > transaction_limit THEN amount - transaction_limit ELSE 0 END)"
+          },
+          {
+            "name": "within_limit_amount",
+            "expr": "SUM(CASE WHEN transaction_limit IS NOT NULL THEN LEAST(amount, transaction_limit) ELSE 0 END)"
+          },
+          {
+            "name": "limit_total",
+            "expr": "SUM(CASE WHEN transaction_limit IS NOT NULL THEN transaction_limit ELSE 0 END)"
+          },
+          {
+            "name": "critical_risk_count",
+            "expr": "COUNT(1) FILTER (WHERE risk_level IS NOT NULL AND (LOWER(risk_level) LIKE 'crit%' OR LOWER(risk_level) LIKE 'high%'))"
+          },
+          {
+            "name": "blocked_count",
+            "expr": "COUNT(1) FILTER (WHERE LOWER(COALESCE(action, '')) LIKE '%block%' OR LOWER(COALESCE(action, '')) LIKE '%declin%')"
+          },
+          {
+            "name": "flagged_customers",
+            "expr": "COUNT(DISTINCT customer_id)"
+          },
+          {
+            "name": "flagged_cards",
+            "expr": "COUNT(DISTINCT card_masked)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "alerts_audit",
+      "displayName": "Gold Alert Audit Trail (Latest 200)",
+      "queryLines": [
+        "SELECT\n",
+        "  alert_id,\n",
+        "  'High-Value Alert' AS alert_stream,\n",
+        "  alert_timestamp,\n",
+        "  transaction_id,\n",
+        "  transaction_timestamp,\n",
+        "  customer_id,\n",
+        "  customer_name,\n",
+        "  CAST(NULL AS STRING) AS card_masked,\n",
+        "  currency,\n",
+        "  merchant_name,\n",
+        "  merchant_category,\n",
+        "  transaction_type,\n",
+        "  payment_channel,\n",
+        "  city,\n",
+        "  country,\n",
+        "  CASE\n",
+        "    WHEN is_international THEN 'International'\n",
+        "    ELSE 'Domestic'\n",
+        "  END AS cross_border,\n",
+        "  CAST(transaction_amount AS DOUBLE) AS transaction_amount,\n",
+        "  CAST(transaction_limit AS DOUBLE) AS transaction_limit,\n",
+        "  CAST(NULL AS STRING) AS risk_level,\n",
+        "  CAST(NULL AS STRING) AS watch_type,\n",
+        "  CAST(NULL AS STRING) AS action,\n",
+        "  CAST(NULL AS STRING) AS reported_source,\n",
+        "  CAST(NULL AS STRING) AS watchlist_city,\n",
+        "  CAST(NULL AS STRING) AS watchlist_country,\n",
+        "  status\n",
+        "FROM\n",
+        "  fineguard.gold.high_value_transactions_alert\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  alert_id,\n",
+        "  'Fraud Watchlist' AS alert_stream,\n",
+        "  alert_timestamp,\n",
+        "  transaction_id,\n",
+        "  transaction_timestamp,\n",
+        "  customer_id,\n",
+        "  customer_name,\n",
+        "  CASE\n",
+        "    WHEN card_number IS NULL THEN NULL\n",
+        "    ELSE CONCAT('**** ', RIGHT(card_number, 4))\n",
+        "  END AS card_masked,\n",
+        "  currency,\n",
+        "  merchant_name,\n",
+        "  merchant_category,\n",
+        "  transaction_type,\n",
+        "  payment_channel,\n",
+        "  transaction_city AS city,\n",
+        "  transaction_country AS country,\n",
+        "  CASE\n",
+        "    WHEN is_international THEN 'International'\n",
+        "    ELSE 'Domestic'\n",
+        "  END AS cross_border,\n",
+        "  CAST(amount AS DOUBLE) AS transaction_amount,\n",
+        "  CAST(NULL AS DOUBLE) AS transaction_limit,\n",
+        "  risk_level,\n",
+        "  watch_type,\n",
+        "  action,\n",
+        "  reported_source,\n",
+        "  watchlist_city,\n",
+        "  watchlist_country,\n",
+        "  transaction_status AS status\n",
+        "FROM\n",
+        "  fineguard.gold.fraud_card_alert\n",
+        "ORDER BY\n",
+        "  alert_timestamp DESC\n",
+        "LIMIT 200"
+      ]
+    }
+  ],
+  "relationshipGraphs": [
+    {
+      "sources": [
+        {
+          "name": "Silver_Transactions_Baseline_Traffic",
+          "datasetName": "transactions"
+        },
+        {
+          "name": "Gold_Alerts_HighValue__Fraud_Watchlist",
+          "datasetName": "alerts"
+        },
+        {
+          "name": "Gold_Alert_Audit_Trail_Latest_200",
+          "datasetName": "alerts_audit"
+        }
+      ],
+      "relationships": [
+        {
+          "name": "relationship_0",
+          "from": "Gold_Alerts_HighValue__Fraud_Watchlist",
+          "to": "Silver_Transactions_Baseline_Traffic",
+          "on": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`transaction_id` = `Silver_Transactions_Baseline_Traffic`.`transaction_id`",
+          "cardinality": "CARDINALITY_MANY_TO_ONE"
+        }
+      ],
+      "measureExpressions": [
+        {
+          "name": "anomaly_alert_rate",
+          "expression": "(MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`high_value_count`) + MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`fraud_match_count`)) * 100 / MEASURE(`Silver_Transactions_Baseline_Traffic`.`transaction_count`)"
+        },
+        {
+          "name": "anomaly_alert_rate",
+          "expression": "(MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`high_value_count`) + MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`fraud_match_count`)) * 100 / MEASURE(`Silver_Transactions_Baseline_Traffic`.`transaction_count`)"
+        },
+        {
+          "name": "alert_rate_pct",
+          "expression": "(MEASURE(`alerts`.`high_value_count`) + MEASURE(`alerts`.`fraud_match_count`)) / MEASURE(`transactions`.`transaction_count`)"
+        },
+        {
+          "name": "anomaly_alert_rate",
+          "expression": "(MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`high_value_count`) + MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`fraud_match_count`)) * 100 / MEASURE(`Silver_Transactions_Baseline_Traffic`.`transaction_count`)"
+        },
+        {
+          "name": "anomaly_alert_rate_v2",
+          "expression": "(MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`high_value_count`) + MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`fraud_match_count`)) * 100 / MEASURE(`Silver_Transactions_Baseline_Traffic`.`transaction_count`)"
+        },
+        {
+          "name": "clean_traffic_ratio",
+          "expression": "100 - (MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`high_value_count`) + MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`fraud_match_count`)) * 100 / MEASURE(`Silver_Transactions_Baseline_Traffic`.`transaction_count`)"
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "bedf577e",
+      "displayName": "Untitled page",
+      "layout": [
+        {
+          "widget": {
+            "name": "kpi_silver_volume",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Silver_Transactions_Baseline_Traffic__total_volume)",
+                      "expression": "MEASURE(`Silver_Transactions_Baseline_Traffic`.`total_volume`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Silver Volume Monitored",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "$0,0.0a",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Silver_Transactions_Baseline_Traffic__total_volume)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_silver_tx_count",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Silver_Transactions_Baseline_Traffic__transaction_count)",
+                      "expression": "MEASURE(`Silver_Transactions_Baseline_Traffic`.`transaction_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Silver Transactions",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0,0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Silver_Transactions_Baseline_Traffic__transaction_count)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 3,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_active_customers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Silver_Transactions_Baseline_Traffic__active_customers)",
+                      "expression": "MEASURE(`Silver_Transactions_Baseline_Traffic`.`active_customers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Active Customers",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0,0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Silver_Transactions_Baseline_Traffic__active_customers)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 8,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_avg_ticket",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Silver_Transactions_Baseline_Traffic__avg_transaction_amount)",
+                      "expression": "MEASURE(`Silver_Transactions_Baseline_Traffic`.`avg_transaction_amount`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Average Ticket Size",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "$0,0.00",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Silver_Transactions_Baseline_Traffic__avg_transaction_amount)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 8,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_hva_count",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__high_value_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`high_value_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "High-Value Limit Breaches",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0,0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__high_value_count)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_excess_amount",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__excess_over_limit)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`excess_over_limit`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Excess Over Limits",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "$0,0.0a",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__excess_over_limit)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 6,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_fraud_matches",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__fraud_match_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`fraud_match_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Fraud Watchlist Matches",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0,0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__fraud_match_count)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 11,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_flagged_customers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__flagged_customers)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`flagged_customers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Flagged Customers",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0,0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__flagged_customers)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 11,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_critical_risk",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__critical_risk_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`critical_risk_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Critical &amp; High Risk Alerts",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0,0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__critical_risk_count)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_blocked_actions",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__blocked_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`blocked_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Blocked / Declined Actions",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0,0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__blocked_count)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 9,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_anomaly_rate",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(anomaly_alert_rate_v2)",
+                      "expression": "MEASURE(`anomaly_alert_rate_v2`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Anomaly &amp; Alert Rate",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0.0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(anomaly_alert_rate_v2)",
+                  "formatTemplate": "{{ @formatted }}%"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_flagged_cards",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__flagged_cards)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`flagged_cards`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Flagged Cards",
+                  "fields": []
+                }
+              },
+              "format": {
+                "numberFormat": {
+                  "format": "0,0",
+                  "formatType": "numeral"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__flagged_cards)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 12,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_daily_timeline",
+            "queries": [
+              {
+                "name": "combo_primary_1",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "daily(Silver_Transactions_Baseline_Traffic__transaction_timestamp)",
+                      "expression": "DATE_TRUNC(\"DAY\", `Silver_Transactions_Baseline_Traffic`.`transaction_timestamp`)"
+                    },
+                    {
+                      "name": "measure(Silver_Transactions_Baseline_Traffic__total_volume)",
+                      "expression": "MEASURE(`Silver_Transactions_Baseline_Traffic`.`total_volume`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "combo_secondary_1",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "daily(Silver_Transactions_Baseline_Traffic__transaction_timestamp)",
+                      "expression": "DATE_TRUNC(\"DAY\", `Silver_Transactions_Baseline_Traffic`.`transaction_timestamp`)"
+                    },
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__high_value_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`high_value_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "combo_secondary_2",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "daily(Silver_Transactions_Baseline_Traffic__transaction_timestamp)",
+                      "expression": "DATE_TRUNC(\"DAY\", `Silver_Transactions_Baseline_Traffic`.`transaction_timestamp`)"
+                    },
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__fraud_match_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`fraud_match_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Silver vs Gold — Daily Alert Timeline",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "combo",
+              "encodings": {
+                "x": {
+                  "fieldName": "daily(Silver_Transactions_Baseline_Traffic__transaction_timestamp)",
+                  "displayName": "Day",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "primary": {
+                    "format": {
+                      "abbreviation": "compact",
+                      "currencyCode": "USD",
+                      "decimalPlaces": {
+                        "places": 1,
+                        "type": "max"
+                      },
+                      "type": "number-currency"
+                    },
+                    "layers": [
+                      {
+                        "mark": {
+                          "colors": [
+                            "#141413"
+                          ]
+                        },
+                        "visual": "bar",
+                        "encodings": {
+                          "value": {
+                            "fieldName": "measure(Silver_Transactions_Baseline_Traffic__total_volume)",
+                            "displayName": "Silver Volume"
+                          }
+                        },
+                        "queryName": "combo_primary_1"
+                      }
+                    ],
+                    "scale": {
+                      "type": "quantitative"
+                    }
+                  },
+                  "secondary": {
+                    "format": {
+                      "abbreviation": "none",
+                      "type": "number-plain"
+                    },
+                    "layers": [
+                      {
+                        "mark": {
+                          "colors": [
+                            "#F5C542"
+                          ],
+                          "marker": {
+                            "shape": "circle"
+                          }
+                        },
+                        "visual": "line",
+                        "encodings": {
+                          "value": {
+                            "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__high_value_count)",
+                            "displayName": "High-Value Alerts"
+                          }
+                        },
+                        "queryName": "combo_secondary_1"
+                      },
+                      {
+                        "mark": {
+                          "colors": [
+                            "#FF5C5C"
+                          ],
+                          "marker": {
+                            "shape": "square"
+                          }
+                        },
+                        "visual": "line",
+                        "encodings": {
+                          "value": {
+                            "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__fraud_match_count)",
+                            "displayName": "Fraud Matches"
+                          }
+                        },
+                        "queryName": "combo_secondary_2"
+                      }
+                    ],
+                    "scale": {
+                      "type": "quantitative"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_limit_utilization",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__within_limit_amount)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`within_limit_amount`)"
+                    },
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__excess_over_limit)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`excess_over_limit`)"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__customer_name",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`customer_name`"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_stream` IN ('High-Value Alert')"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Limit Utilization — Top High-Value Customers",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#141413",
+                  "#F5C542"
+                ],
+                "layout": "stack"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fields": [
+                    {
+                      "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__within_limit_amount)",
+                      "displayName": "Within Limit"
+                    },
+                    {
+                      "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__excess_over_limit)",
+                      "displayName": "Excess Over Limit"
+                    }
+                  ],
+                  "format": {
+                    "abbreviation": "compact",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "places": 1,
+                      "type": "max"
+                    },
+                    "type": "number-currency"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__customer_name",
+                  "displayName": "Customer",
+                  "scale": {
+                    "type": "categorical",
+                    "categorySize": {
+                      "type": "number-of-categories",
+                      "number": 10
+                    },
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_merchant_matrix",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Silver_Transactions_Baseline_Traffic__transaction_count)",
+                      "expression": "MEASURE(`Silver_Transactions_Baseline_Traffic`.`transaction_count`)"
+                    },
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__alert_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_count`)"
+                    },
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__merchant_category",
+                      "expression": "`Silver_Transactions_Baseline_Traffic`.`merchant_category`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Merchant Category Risk Matrix",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#141413",
+                  "#FF5C5C"
+                ],
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fields": [
+                    {
+                      "fieldName": "measure(Silver_Transactions_Baseline_Traffic__transaction_count)",
+                      "displayName": "Silver Transactions"
+                    },
+                    {
+                      "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__alert_count)",
+                      "displayName": "Gold Alerts"
+                    }
+                  ],
+                  "format": {
+                    "abbreviation": "none",
+                    "type": "number-plain"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "Silver_Transactions_Baseline_Traffic__merchant_category",
+                  "displayName": "Merchant Category",
+                  "scale": {
+                    "type": "categorical",
+                    "categorySize": {
+                      "type": "number-of-categories",
+                      "number": 10
+                    },
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 22,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_risk_donut",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__alert_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_count`)"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__risk_level",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`risk_level`"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_stream` IN ('Fraud Watchlist')"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Fraud Watchlist — Risk Level Breakdown",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__alert_count)",
+                  "format": {
+                    "abbreviation": "none",
+                    "type": "number-plain"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__risk_level",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 28,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_watch_composition",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__cross_border",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`cross_border`"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__watch_type",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`watch_type`"
+                    },
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__alert_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_count`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_stream` IN ('Fraud Watchlist')"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Watchlist Composition — Domestic vs International",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "layout": "stack"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__watch_type",
+                  "displayName": "Watch Type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__alert_count)",
+                  "format": {
+                    "abbreviation": "none",
+                    "type": "number-plain"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__cross_border",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 28,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_geo_leaderboard",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "measure(Silver_Transactions_Baseline_Traffic__transaction_count)",
+                      "expression": "MEASURE(`Silver_Transactions_Baseline_Traffic`.`transaction_count`)"
+                    },
+                    {
+                      "name": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__alert_count)",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_count`)"
+                    },
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__country",
+                      "expression": "`Silver_Transactions_Baseline_Traffic`.`country`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Geographic Risk Leaderboard",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#141413",
+                  "#FF5C5C"
+                ],
+                "layout": "group"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fields": [
+                    {
+                      "fieldName": "measure(Silver_Transactions_Baseline_Traffic__transaction_count)",
+                      "displayName": "Silver Transactions"
+                    },
+                    {
+                      "fieldName": "measure(Gold_Alerts_HighValue__Fraud_Watchlist__alert_count)",
+                      "displayName": "Gold Alerts"
+                    }
+                  ],
+                  "format": {
+                    "abbreviation": "none",
+                    "type": "number-plain"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "Silver_Transactions_Baseline_Traffic__country",
+                  "displayName": "Country",
+                  "scale": {
+                    "categorySize": {
+                      "number": 10,
+                      "type": "number-of-categories"
+                    },
+                    "type": "categorical",
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 28,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "table_audit_trail",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__alert_timestamp",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`alert_timestamp`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__alert_id",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`alert_id`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__transaction_id",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`transaction_id`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__alert_stream",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`alert_stream`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__customer_name",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`customer_name`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__card_masked",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`card_masked`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__merchant_name",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`merchant_name`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__merchant_category",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`merchant_category`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__payment_channel",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`payment_channel`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__city",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`city`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__country",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`country`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__cross_border",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`cross_border`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__currency",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`currency`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__transaction_amount",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`transaction_amount`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__transaction_limit",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`transaction_limit`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__risk_level",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`risk_level`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__watch_type",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`watch_type`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__action",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`action`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__status",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`status`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__watchlist_country",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`watchlist_country`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Gold Alert Audit Trail — Latest 200 Incidents",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__alert_timestamp"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__alert_id"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__transaction_id"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__alert_stream"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__customer_name"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__card_masked"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__merchant_name"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__merchant_category"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__payment_channel"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__city"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__country"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__cross_border"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__currency"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__transaction_amount"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__transaction_limit"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__risk_level"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__watch_type"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__action"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__status"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__watchlist_country"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 34,
+            "width": 12,
+            "height": 10
+          }
+        },
+        {
+          "widget": {
+            "name": "hero_banner",
+            "spec": {
+              "style": {
+                "fontColor": {
+                  "dark": "#F5C542",
+                  "light": "#F5C542"
+                }
+              },
+              "version": 1,
+              "verticalAlign": "top",
+              "widgetType": "text",
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "# <span style=\"color: #D6D3CD;\">Real-Time Financial</span>\n",
+                    "\n",
+                    "# <span style=\"color: #D6D3CD;\">Risk & Fraud Shield</span>\n",
+                    "\n",
+                    "End-to-end streaming observability across **finguard.silver** operational transactions and **finguard.gold** high-value threshold & watchlist alerts."
+                  ],
+                  "fields": []
+                }
+              }
+            },
+            "specExtensions": {
+              "widgetBackgroundColor": {
+                "light": "#141413",
+                "dark": "#141413"
+              },
+              "widgetBorderColor": {
+                "light": "#F5C542",
+                "dark": "#F5C542"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "hero_spotlight",
+            "queries": [
+              {
+                "name": "text_q_",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "volume",
+                      "expression": "MEASURE(`Silver_Transactions_Baseline_Traffic`.`total_volume`)"
+                    },
+                    {
+                      "name": "clean",
+                      "expression": "MEASURE(`clean_traffic_ratio`)"
+                    },
+                    {
+                      "name": "hv",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`high_value_count`)"
+                    },
+                    {
+                      "name": "fraud",
+                      "expression": "MEASURE(`Gold_Alerts_HighValue__Fraud_Watchlist`.`fraud_match_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "style": {
+                "fontColor": {
+                  "dark": "#FFFFFF",
+                  "light": "#FFFFFF"
+                }
+              },
+              "version": 1,
+              "verticalAlign": "center",
+              "widgetType": "text",
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "## {{ field:volume }}\n",
+                    "\n",
+                    "**SILVER CLEARED VOLUME**\n",
+                    "\n",
+                    "## {{ field:clean }}\n",
+                    "\n",
+                    "**CLEAN TRAFFIC RATIO**\n",
+                    "\n",
+                    "**▲&#32;**{{ field:hv }}**&#32;HIGH-VALUE ALERTS** · **⚠&#32;**{{ field:fraud }}**&#32;WATCHLIST HITS**"
+                  ],
+                  "fields": [
+                    {
+                      "queryName": "text_q_",
+                      "fieldName": "volume",
+                      "format": {
+                        "abbreviation": "none",
+                        "currencyCode": "USD",
+                        "type": "number-currency"
+                      }
+                    },
+                    {
+                      "queryName": "text_q_",
+                      "fieldName": "clean",
+                      "format": {
+                        "abbreviation": "none",
+                        "decimalPlaces": {
+                          "places": 2,
+                          "type": "exact"
+                        },
+                        "type": "number-plain"
+                      }
+                    },
+                    {
+                      "queryName": "text_q_",
+                      "fieldName": "hv",
+                      "format": {
+                        "abbreviation": "none",
+                        "type": "number-plain"
+                      }
+                    },
+                    {
+                      "queryName": "text_q_",
+                      "fieldName": "fraud",
+                      "format": {
+                        "abbreviation": "none",
+                        "type": "number-plain"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "specExtensions": {
+              "widgetBackgroundColor": {
+                "light": "#141413",
+                "dark": "#141413"
+              },
+              "widgetBorderColor": {
+                "light": "#F5C542",
+                "dark": "#F5C542"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "global_filters",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "date_range",
+            "queries": [
+              {
+                "name": "_Silver_Transactions_Baseline_Traffic__transaction_timestamp",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__transaction_timestamp",
+                      "expression": "`Silver_Transactions_Baseline_Traffic`.`transaction_timestamp`"
+                    },
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__transaction_timestamp_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alerts_HighValue__Fraud_Watchlist__alert_timestamp",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__alert_timestamp",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_timestamp`"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__alert_timestamp_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alert_Audit_Trail_Latest_200__alert_timestamp",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__alert_timestamp",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`alert_timestamp`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__alert_timestamp_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Date Range",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Silver_Transactions_Baseline_Traffic__transaction_timestamp",
+                    "queryName": "_Silver_Transactions_Baseline_Traffic__transaction_timestamp"
+                  },
+                  {
+                    "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__alert_timestamp",
+                    "queryName": "_Gold_Alerts_HighValue__Fraud_Watchlist__alert_timestamp"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__alert_timestamp",
+                    "queryName": "_Gold_Alert_Audit_Trail_Latest_200__alert_timestamp"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "alert_stream",
+            "queries": [
+              {
+                "name": "_Gold_Alerts_HighValue__Fraud_Watchlist__alert_stream",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__alert_stream",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`alert_stream`"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__alert_stream_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alert_Audit_Trail_Latest_200__alert_stream",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__alert_stream",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`alert_stream`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__alert_stream_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Alert Stream",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__alert_stream",
+                    "queryName": "_Gold_Alerts_HighValue__Fraud_Watchlist__alert_stream"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__alert_stream",
+                    "queryName": "_Gold_Alert_Audit_Trail_Latest_200__alert_stream"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "risk_level",
+            "queries": [
+              {
+                "name": "_Gold_Alerts_HighValue__Fraud_Watchlist__risk_level",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__risk_level",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`risk_level`"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__risk_level_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alert_Audit_Trail_Latest_200__risk_level",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__risk_level",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`risk_level`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__risk_level_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Risk Level",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__risk_level",
+                    "queryName": "_Gold_Alerts_HighValue__Fraud_Watchlist__risk_level"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__risk_level",
+                    "queryName": "_Gold_Alert_Audit_Trail_Latest_200__risk_level"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "merchant_category",
+            "queries": [
+              {
+                "name": "_Silver_Transactions_Baseline_Traffic__merchant_category",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__merchant_category",
+                      "expression": "`Silver_Transactions_Baseline_Traffic`.`merchant_category`"
+                    },
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__merchant_category_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alerts_HighValue__Fraud_Watchlist__merchant_category",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__merchant_category",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`merchant_category`"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__merchant_category_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alert_Audit_Trail_Latest_200__merchant_category",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__merchant_category",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`merchant_category`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__merchant_category_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Merchant Category",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Silver_Transactions_Baseline_Traffic__merchant_category",
+                    "queryName": "_Silver_Transactions_Baseline_Traffic__merchant_category"
+                  },
+                  {
+                    "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__merchant_category",
+                    "queryName": "_Gold_Alerts_HighValue__Fraud_Watchlist__merchant_category"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__merchant_category",
+                    "queryName": "_Gold_Alert_Audit_Trail_Latest_200__merchant_category"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "country",
+            "queries": [
+              {
+                "name": "_Silver_Transactions_Baseline_Traffic__country",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__country",
+                      "expression": "`Silver_Transactions_Baseline_Traffic`.`country`"
+                    },
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alerts_HighValue__Fraud_Watchlist__country",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__country",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`country`"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alert_Audit_Trail_Latest_200__country",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__country",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`country`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Country",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Silver_Transactions_Baseline_Traffic__country",
+                    "queryName": "_Silver_Transactions_Baseline_Traffic__country"
+                  },
+                  {
+                    "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__country",
+                    "queryName": "_Gold_Alerts_HighValue__Fraud_Watchlist__country"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__country",
+                    "queryName": "_Gold_Alert_Audit_Trail_Latest_200__country"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "cross_border",
+            "queries": [
+              {
+                "name": "_Silver_Transactions_Baseline_Traffic__cross_border",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__cross_border",
+                      "expression": "`Silver_Transactions_Baseline_Traffic`.`cross_border`"
+                    },
+                    {
+                      "name": "Silver_Transactions_Baseline_Traffic__cross_border_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alerts_HighValue__Fraud_Watchlist__cross_border",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__cross_border",
+                      "expression": "`Gold_Alerts_HighValue__Fraud_Watchlist`.`cross_border`"
+                    },
+                    {
+                      "name": "Gold_Alerts_HighValue__Fraud_Watchlist__cross_border_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "_Gold_Alert_Audit_Trail_Latest_200__cross_border",
+                "query": {
+                  "fields": [
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__cross_border",
+                      "expression": "`Gold_Alert_Audit_Trail_Latest_200`.`cross_border`"
+                    },
+                    {
+                      "name": "Gold_Alert_Audit_Trail_Latest_200__cross_border_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Cross-Border",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Silver_Transactions_Baseline_Traffic__cross_border",
+                    "queryName": "_Silver_Transactions_Baseline_Traffic__cross_border"
+                  },
+                  {
+                    "fieldName": "Gold_Alerts_HighValue__Fraud_Watchlist__cross_border",
+                    "queryName": "_Gold_Alerts_HighValue__Fraud_Watchlist__cross_border"
+                  },
+                  {
+                    "fieldName": "Gold_Alert_Audit_Trail_Latest_200__cross_border",
+                    "queryName": "_Gold_Alert_Audit_Trail_Latest_200__cross_border"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 2,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#141413"
+      },
+      "widgetBackgroundColor": {
+        "light": "#F7F2E5",
+        "dark": "#1D1D1B"
+      },
+      "widgetBorderColor": {
+        "light": "#141413",
+        "dark": "#3A3A36"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#F5C542",
+        "dark": "#F5C542"
+      },
+      "visualizationColors": [
+        "#141413",
+        "#F5C542",
+        "#FF5C5C",
+        "#8A877F",
+        "#52524E",
+        "#D6D3CD"
+      ],
+      "widgetHeaderAlignment": "LEFT",
+      "widgetPadding": 16,
+      "widgetCornerRadius": 0,
+      "widgetShadow": 0,
+      "fontSettings": {
+        "base": {
+          "fontFamily": "Cairo",
+          "fontColor": {
+            "light": "#141413",
+            "dark": "#F5F5F2"
+          },
+          "fontWeight": 600
+        },
+        "widgetTitle": {
+          "fontFamily": "Cairo",
+          "textCase": "TEXT_CASE_UPPERCASE",
+          "fontColor": {
+            "light": "#141413",
+            "dark": "#F5F5F2"
+          },
+          "fontWeight": 800
+        },
+        "widgetDescription": {
+          "fontFamily": "Cairo",
+          "fontColor": {
+            "light": "#8F8D86",
+            "dark": "#D6D3CD"
+          },
+          "fontWeight": 600
+        },
+        "fieldTitle": {
+          "fontFamily": "Cairo",
+          "textCase": "TEXT_CASE_UPPERCASE",
+          "fontColor": {
+            "light": "#141413",
+            "dark": "#D6D3CD"
+          },
+          "fontWeight": 800
+        },
+        "fieldValue": {
+          "fontFamily": "Cairo",
+          "fontColor": {
+            "light": "#141413",
+            "dark": "#F5F5F2"
+          },
+          "fontWeight": 800
+        }
+      },
+      "gridLineColor": {
+        "light": "#D6D3CD",
+        "dark": "#3A3A36"
+      },
+      "axisLineColor": {
+        "light": "#141413",
+        "dark": "#F5F5F2"
+      },
+      "visualizationColorMappings": [
+        {
+          "value": "CRITICAL",
+          "color": "#FF5C5C"
+        },
+        {
+          "value": "HIGH",
+          "color": "#F5C542"
+        },
+        {
+          "value": "MEDIUM",
+          "color": "#8A877F"
+        },
+        {
+          "value": "LOW",
+          "color": "#8A877F"
+        },
+        {
+          "value": "High-Value Alert",
+          "color": "#F5C542"
+        },
+        {
+          "value": "Fraud Watchlist",
+          "color": "#FF5C5C"
+        },
+        {
+          "value": "International",
+          "color": "#FF5C5C"
+        },
+        {
+          "value": "Domestic",
+          "color": "#8A877F"
+        },
+        {
+          "value": "CARD",
+          "color": "#F5C542"
+        },
+        {
+          "value": "APPROVED",
+          "color": "#F5C542"
+        },
+        {
+          "value": "ADD",
+          "color": "#141413"
+        }
+      ]
+    },
+    "applyModeEnabled": false
+  }
+}
